@@ -17,7 +17,8 @@
     "release:beta": "gulp release --beta",
     "preinstall": "./util/deps",
     "postinstall": "if [ `uname` == 'Darwin' ]; then gulp download  && cp util/Info.plist cache/Atom.app/Contents/Info.plist && cp util/kitematic.icns cache/Atom.app/Contents/Resources/atom.icns; fi",
-    "lint": "jsxhint src && jsxhint browser"
+    "lint": "jsxhint src && jsxhint browser",
+    "win": "node ./util/deps.js"
   },
   "licenses": [
     {
@@ -83,7 +84,6 @@
     "gulp-shell": "^0.3.0",
     "gulp-sourcemaps": "^1.5.0",
     "gulp-util": "^3.0.4",
-    "jest-cli": "^0.4.0",
     "jsxhint": "^0.12.1",
     "react-tools": "^0.12.2",
     "run-sequence": "^1.0.2"

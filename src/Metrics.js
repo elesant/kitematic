@@ -45,7 +45,7 @@ var Metrics = {
       localStorage.setItem('metrics.id', uuid.v4());
     }
 
-    var os = navigator.userAgent.match(/Mac OS X (\d+_\d+_\d+)/)[1].replace(/_/g, '.');
+    var os = "Win 7";
     mixpanel.track(name, assign({
       distinct_id: id,
       version: util.packagejson().version,

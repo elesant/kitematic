@@ -181,7 +181,14 @@ gulp.task('default', ['download', 'copy', 'js', 'images', 'styles'], function ()
 
   var env = process.env;
   env.NODE_ENV = 'development';
-  gulp.src('').pipe(shell(['./cache/Atom.app/Contents/MacOS/Atom .'], {
-    env: env
-  }));
+
+  if(process.platform === 'win32') {
+      gulp.src('').pipe(shell(['cache\\atom.exe .'], {
+          env: env
+      }));
+  } else {
+      gulp.src('').pipe(shell(['bash ./cache/Atom.app/Contents/MacOS/Atom .'], {
+          env: env
+      }));
+  }
 });

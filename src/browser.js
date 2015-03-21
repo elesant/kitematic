@@ -20,14 +20,16 @@ try {
 
 app.on('ready', function () {
   var mainWindow = new BrowserWindow({
-    width: size.width || 1000,
-    height: size.height || 700,
-    'min-width': 1000,
-    'min-height': 700,
+    width: size.width || 1500,
+    height: size.height || 1000,
+    'min-width': 1500,
+    'min-height': 1000,
     resizable: true,
     frame: false,
     show: true
   });
+
+    mainWindow.openDevTools();
 
   mainWindow.loadUrl(path.normalize('file://' + path.join(__dirname, '..', 'build/index.html')));
 

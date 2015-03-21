@@ -9,7 +9,7 @@ var NAME = 'dev';
 
 var DockerMachine = {
   command: function () {
-    return path.join(process.cwd(), 'resources', 'docker-machine-' + this.version());
+    return path.join(process.cwd(), 'resources', 'docker-machine.exe');
   },
   name: function () {
     return NAME;
