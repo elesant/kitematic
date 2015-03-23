@@ -4,10 +4,18 @@ var Promise = require('bluebird');
 
 var VirtualBox = {
   command: function () {
-    return '/usr/bin/VBoxManage';
+      if(process.platform === 'win32') {
+          return 'C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe';
+      } else {
+          return '/usr/bin/VBoxManage';
+      }
   },
   installed: function () {
-    return fs.existsSync('/usr/bin/VBoxManage') && fs.existsSync('/Applications/VirtualBox.app');
+    if(process.platform === 'win32') {
+        return fs.existsSync('C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe') && fs.existsSync('C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe');
+    } else {
+        return fs.existsSync('/usr/bin/VBoxManage') && fs.existsSync('/Applications/VirtualBox.app');
+    }
   },
   version: function () {
     return new Promise((resolve, reject) => {
@@ -27,13 +35,21 @@ var VirtualBox = {
     return util.exec(this.command() + ' list runningvms | sed -E \'s/.*\\{(.*)\\}/\\1/\' | xargs -L1 -I {} ' + this.command() + ' controlvm {} poweroff');
   },
   killall: function () {
-    return this.poweroffall().then(() => {
-      return util.exec(['pkill', 'VirtualBox']);
-    }).then(() => {
-      return util.exec(['pkill', 'VBox']);
-    }).catch(() => {
+      if(process.platform === 'win32') {
+          return this.poweroffall().then(() => {
+              return util.exec(['powershell.exe', '\"get-process VBox* | stop-process\"']);
+            }).catch(() => {
 
-    });
+            });
+      } else {
+          return this.poweroffall().then(() => {
+              return util.exec(['pkill', 'VirtualBox']);
+            }).then(() => {
+              return util.exec(['pkill', 'VBox']);
+            }).catch(() => {
+
+            });
+      }
   },
   wake: function (name) {
     return util.exec([this.command(), 'startvm', name, '--type', 'headless']);

@@ -167,6 +167,28 @@ gulp.task('settings', function () {
   string_src('settings.json', JSON.stringify(settings)).pipe(gulp.dest('dist/osx/' + options.appFilename.replace(' ', '\ ').replace('(','\(').replace(')','\)') + '/Contents/Resources/app'));
 });
 
+gulp.task('download-deps', function (done) {
+    if(process.platform === 'win32') {
+        var spawn = require("child_process").spawn,child;
+        child = spawn("powershell.exe",['-ExecutionPolicy', 'unrestricted', '-File', 'util\\deps.ps1']);
+        child.stdout.on("data",function(data){
+            console.log("Powershell Data: " + data);
+        });
+        child.stderr.on("data",function(data){
+            console.log("Powershell Errors: " + data);
+        });
+        child.on("exit",function(){
+            console.log("Powershell Script finished");
+            done();
+        });
+        child.stdin.end(); //end input
+    } else {
+        return gulp.src('').pipe(
+            shell(['./util/deps'])
+        );
+    }
+});
+
 gulp.task('release', function () {
   runSequence('download', 'dist', ['copy', 'images', 'js', 'styles', 'settings'], 'sign', 'zip');
 });
@@ -187,7 +209,7 @@ gulp.task('default', ['download', 'copy', 'js', 'images', 'styles'], function ()
           env: env
       }));
   } else {
-      gulp.src('').pipe(shell(['bash ./cache/Atom.app/Contents/MacOS/Atom .'], {
+      gulp.src('').pipe(shell(['./cache/Atom.app/Contents/MacOS/Atom .'], {
           env: env
       }));
   }
