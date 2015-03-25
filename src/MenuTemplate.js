@@ -166,7 +166,7 @@ var MenuTemplate = function () {
             metrics.track('Opened Issue Reporter', {
               from: 'menu'
             });
-            util.exec(['open', 'https://github.com/kitematic/kitematic/issues/new']);
+            util.openPathOrUrl('https://github.com/kitematic/kitematic/issues/new');
           }
         },
       ]

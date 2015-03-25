@@ -9,53 +9,99 @@ var util = require('./Util');
 
 var SetupUtil = {
   needsBinaryFix: function () {
-    if (!fs.existsSync('/usr/local') || !fs.existsSync('/usr/local/bin')) {
-      return true;
-    }
+    if(util.isWindows()) {
+      if(!fs.existsSync(path.join(util.home(), 'Kitematic-bins'))) {
+        return true;
+      }
+      
+      if(!fs.existsSync(path.join(util.home(), 'Kitematic-bins', 'docker.exe'))) {
+        return true;
+      }
+        
+      if(!fs.existsSync(path.join(util.home(), 'Kitematic-bins', 'docker-machine.exe'))) {
+        return true;
+      }
+    } else {
+      if (!fs.existsSync('/usr/local') || !fs.existsSync('/usr/local/bin')) {
+        return true;
+      }
 
-    if (fs.statSync('/usr/local/bin').gid !== 80 || fs.statSync('/usr/local/bin').uid !== process.getuid()) {
-      return true;
-    }
+      if (fs.statSync('/usr/local/bin').gid !== 80 || fs.statSync('/usr/local/bin').uid !== process.getuid()) {
+        return true;
+      }
 
-    if (fs.existsSync('/usr/local/bin/docker') && (fs.statSync('/usr/local/bin/docker').gid !== 80 || fs.statSync('/usr/local/bin/docker').uid !== process.getuid())) {
-      return true;
-    }
+      if (fs.existsSync('/usr/local/bin/docker') && (fs.statSync('/usr/local/bin/docker').gid !== 80 || fs.statSync('/usr/local/bin/docker').uid !== process.getuid())) {
+        return true;
+      }
 
-    if (fs.existsSync('/usr/local/bin/docker-machine') && (fs.statSync('/usr/local/bin/docker-machine').gid !== 80 || fs.statSync('/usr/local/bin/docker-machine').uid !== process.getuid())) {
-      return true;
+      if (fs.existsSync('/usr/local/bin/docker-machine') && (fs.statSync('/usr/local/bin/docker-machine').gid !== 80 || fs.statSync('/usr/local/bin/docker-machine').uid !== process.getuid())) {
+        return true;
+      }
+      return false;
     }
-    return false;
+      
+    
   },
   copycmd: function (src, dest) {
-    return ['rm', '-f', dest, '&&', 'cp', src, dest];
+    if(util.isWindows()) {
+      return ['if', 'exist', dest, 'del', '/F', '/Q', dest, '&&', 'copy', src, dest];
+    } else {
+      return ['rm', '-f', dest, '&&', 'cp', src, dest];
+    }
   },
   escapePath: function (str) {
     return str.replace(/ /g, '\\ ').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
   },
   shouldUpdateBinaries: function () {
     var packagejson = util.packagejson();
-    return !fs.existsSync('/usr/local/bin/docker') ||
-      !fs.existsSync('/usr/local/bin/docker-machine') ||
-      this.checksum('/usr/local/bin/docker-machine') !== this.checksum(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'])) ||
-      this.checksum('/usr/local/bin/docker') !== this.checksum(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version']));
+    
+    if(util.isWindows()) {
+      var dockerPath = path.join(util.home(), 'Kitematic-bins', 'docker.exe');
+      var dockerMachinePath = path.join(util.home(), 'Kitematic-bins', 'docker-machine.exe');
+        
+      return !fs.existsSync(dockerPath) ||
+        !fs.existsSync(dockerMachinePath) ||
+        this.checksum(dockerMachinePath) !== this.checksum(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'] + '.exe')) ||
+        this.checksum(dockerPath) !== this.checksum(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version'] + '.exe'));
+    } else {
+      return !fs.existsSync('/usr/local/bin/docker') ||
+        !fs.existsSync('/usr/local/bin/docker-machine') ||
+        this.checksum('/usr/local/bin/docker-machine') !== this.checksum(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'])) ||
+        this.checksum('/usr/local/bin/docker') !== this.checksum(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version']));
+    }
   },
   copyBinariesCmd: function () {
     var packagejson = util.packagejson();
-    var cmd = ['mkdir', '-p', '/usr/local/bin'];
-    cmd.push('&&');
-    cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'])), '/usr/local/bin/docker-machine'));
-    cmd.push('&&');
-    cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version'])), '/usr/local/bin/docker'));
-    return cmd.join(' ');
+    
+    if(util.isWindows()) {
+      var binsPath = path.join(util.home(), 'Kitematic-bins');
+      var cmd = ['if', 'not', 'exist', binsPath, 'mkdir', binsPath];
+      cmd.push('&&');
+      cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'] + '.exe')), path.join(binsPath, 'docker-machine.exe')));
+      cmd.push('&&');
+      cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version'] + '.exe')), path.join(binsPath, 'docker.exe')));
+      return cmd.join(' ');
+    } else {
+      var cmd = ['mkdir', '-p', '/usr/local/bin'];
+      cmd.push('&&');
+      cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-machine-' + packagejson['docker-machine-version'])), '/usr/local/bin/docker-machine'));
+      cmd.push('&&');
+      cmd.push.apply(cmd, this.copycmd(this.escapePath(path.join(util.resourceDir(), 'docker-' + packagejson['docker-version'])), '/usr/local/bin/docker'));
+      return cmd.join(' ');
+    }
   },
   fixBinariesCmd: function () {
-    var cmd = [];
-    cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin')]);
-    cmd.push('&&');
-    cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin', 'docker-machine')]);
-    cmd.push('&&');
-    cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin', 'docker')]);
-    return cmd.join(' ');
+    if(util.isWindows()) {
+      return ['rem'];
+    } else {
+      var cmd = [];
+      cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin')]);
+      cmd.push('&&');
+      cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin', 'docker-machine')]);
+      cmd.push('&&');
+      cmd.push.apply(cmd, ['chown', `${process.getuid()}:${80}`, path.join('/usr/local/bin', 'docker')]);
+      return cmd.join(' ');
+    }
   },
   installVirtualBoxCmd: function () {
     var packagejson = util.packagejson();

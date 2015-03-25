@@ -70,9 +70,15 @@ var _steps = [{
       try {
         yield machine.rm();
         yield machine.create();
+        yield machine.stop();
+        yield virtualBox.mountSharedDir(machine.name(), 'c/Users', 'C:\\Users');
+        yield machine.start();
       } catch (err) {
         rimraf.sync(path.join(util.home(), '.docker', 'machine', 'machines', machine.name()));
         yield machine.create();
+        yield machine.stop();
+        yield virtualBox.mountSharedDir(machine.name(), 'c/Users', 'C:\\Users');
+        yield machine.start();
       }
       return;
     }

@@ -4,6 +4,7 @@ var BrowserWindow = require('browser-window');
 var fs = require('fs');
 var ipc = require('ipc');
 var path = require('path');
+var util = require('./Util');
 
 process.env.NODE_PATH = path.join(__dirname, '/../node_modules');
 process.env.RESOURCES_PATH = path.join(__dirname, '/../resources');
@@ -12,7 +13,7 @@ process.env.PATH = '/usr/local/bin:' + process.env.PATH;
 
 var size = {}, settingsjson = {};
 try {
-  size = JSON.parse(fs.readFileSync(path.join(process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'], 'Library', 'Application\ Support', 'Kitematic', 'size')));
+  size = JSON.parse(fs.readFileSync(path.join(util.home(), 'Library', 'Application\ Support', 'Kitematic', 'size')));
 } catch (err) {}
 try {
   settingsjson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'settings.json'), 'utf8'));

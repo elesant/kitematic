@@ -2,6 +2,7 @@ var exec = require('exec');
 var Promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
+var open = require('open');
 
 module.exports = {
   exec: function (args, options) {
@@ -18,11 +19,14 @@ module.exports = {
     });
   },
   home: function () {
-    return process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'];
+    return process.env[this.isWindows() ? 'USERPROFILE' : 'HOME'];
+  },
+  openPathOrUrl: function (pathOrUrl, callback) {
+    open(pathOrUrl, callback);
   },
   supportDir: function () {
     var dirs = ['Library', 'Application\ Support', 'Kitematic'];
-    var acc = process.env.HOME;
+    var acc = this.home();
     dirs.forEach(function (d) {
       acc = path.join(acc, d);
       if (!fs.existsSync(acc)) {
@@ -44,5 +48,8 @@ module.exports = {
     } catch (err) {}
     return settingsjson;
   },
+  isWindows: function () {
+    return process.platform === 'win32';
+  }
   webPorts: ['80', '8000', '8080', '3000', '5000', '2368', '9200', '8983']
 };
