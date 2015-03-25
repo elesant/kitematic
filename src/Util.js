@@ -50,6 +50,6 @@ module.exports = {
   },
   isWindows: function () {
     return process.platform === 'win32';
-  }
+  },
   webPorts: ['80', '8000', '8080', '3000', '5000', '2368', '9200', '8983']
 };

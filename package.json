@@ -44,7 +44,9 @@
   "atom-shell-version": "0.21.3",
   "virtualbox-version": "4.3.24",
   "virtualbox-filename": "VirtualBox-4.3.24.pkg",
+  "virtualbox-filename-win": "VirtualBox-4.3.26.exe",
   "virtualbox-checksum": "100eee21df3808fc1b1e461e86f10b6d2a748935c5f31bc665f4ff0777e44a0b",
+  "virtualbox-checksum-win": "9cb265babf307d825f5178693af95ffca077f80ae22cf43868c3538c159123ff",
   "dependencies": {
     "ansi-to-html": "0.3.0",
     "async": "^0.9.0",

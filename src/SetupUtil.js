@@ -105,11 +105,19 @@ var SetupUtil = {
   },
   installVirtualBoxCmd: function () {
     var packagejson = util.packagejson();
-    return `installer -pkg ${this.escapePath(path.join(util.supportDir(), packagejson['virtualbox-filename']))} -target /`;
+    if(util.isWindows()) {
+      return `echo.>${this.escapePath(path.join(util.supportDir(), this.virtualBoxFileName()))} && powershell.exe -ExecutionPolicy unrestricted -Command \"Start-Process ${this.escapePath(path.join(util.supportDir(), this.virtualBoxFileName()))} -ArgumentList "--silent --msiparams REBOOT=ReallySuppress" -Wait\"`;
+    }
+      
+    return `installer -pkg ${this.escapePath(path.join(util.supportDir(), this.virtualBoxFileName()))} -target /`;
   },
   virtualBoxUrl: function () {
     var packagejson = util.packagejson();
-    return `https://github.com/kitematic/virtualbox/releases/download/${packagejson['virtualbox-version']}/${packagejson['virtualbox-filename']}`;
+    if(util.isWindows()) {
+      return 'http://download.virtualbox.org/virtualbox/4.3.26/VirtualBox-4.3.26-98988-Win.exe';
+    } else {
+      return `https://github.com/kitematic/virtualbox/releases/download/${packagejson['virtualbox-version']}/${this.virtualBoxFileName()}`;
+    }
   },
   macSudoCmd: function (cmd) {
     return `${this.escapePath(path.join(util.resourceDir(), 'macsudo'))} -p "Kitematic requires administrative privileges to install." sh -c \"${cmd}\"`;
@@ -154,6 +162,14 @@ var SetupUtil = {
         resolve();
       });
     });
+  },
+  virtualBoxFileName: function() {
+    var packagejson = util.packagejson();
+    return util.isWindows() ? packagejson['virtualbox-filename-win'] : packagejson['virtualbox-filename'];
+  },
+  virtualBoxFChecksum: function() {
+    var packagejson = util.packagejson();
+    return util.isWindows() ? packagejson['virtualbox-checksum-win'] : packagejson['virtualbox-checksum'];
   },
   compareVersions: function (v1, v2, options) {
     var lexicographical = options && options.lexicographical,

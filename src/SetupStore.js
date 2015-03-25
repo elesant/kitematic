@@ -27,7 +27,7 @@ var _steps = [{
   percent: 0,
   run: function (progressCallback) {
     var packagejson = util.packagejson();
-    return setupUtil.download(setupUtil.virtualBoxUrl(), path.join(util.supportDir(), packagejson['virtualbox-filename']), packagejson['virtualbox-checksum'], percent => {
+    return setupUtil.download(setupUtil.virtualBoxUrl(), path.join(util.supportDir(), setupUtil.virtualBoxFileName()), setupUtil.virtualBoxFChecksum(), percent => {
       progressCallback(percent);
     });
   }
@@ -50,7 +50,11 @@ var _steps = [{
     }
     try {
       progressCallback(50); // TODO: detect when the installation has started so we can simulate progress
-      yield util.exec(setupUtil.macSudoCmd(cmd));
+      if(util.isWindows()) {
+        yield util.exec(cmd);
+      } else {
+        yield util.exec(setupUtil.macSudoCmd(cmd));
+      }
     } catch (err) {
       throw null;
     }
@@ -77,6 +81,8 @@ var _steps = [{
         rimraf.sync(path.join(util.home(), '.docker', 'machine', 'machines', machine.name()));
         yield machine.create();
         yield machine.stop();
+          
+          //TODO: Support other paths.
         yield virtualBox.mountSharedDir(machine.name(), 'c/Users', 'C:\\Users');
         yield machine.start();
       }
@@ -162,11 +168,11 @@ var SetupStore = assign(Object.create(EventEmitter.prototype), {
     var packagejson = util.packagejson();
     var isoversion = machine.isoversion();
     var required = {};
-    var vboxfile = path.join(util.supportDir(), packagejson['virtualbox-filename']);
+    var vboxfile = path.join(util.supportDir(), setupUtil.virtualBoxFileName());
     var vboxNeedsInstall = !virtualBox.installed();
       
-    required.download = vboxNeedsInstall;// && (!fs.existsSync(vboxfile) || setupUtil.checksum(vboxfile) !== packagejson['virtualbox-checksum']);
-    required.install = vboxNeedsInstall;// || setupUtil.needsBinaryFix();
+    required.download = vboxNeedsInstall && (!fs.existsSync(vboxfile) || setupUtil.checksum(vboxfile) !== setupUtil.virtualBoxFChecksum());
+    required.install = vboxNeedsInstall || setupUtil.needsBinaryFix();
     required.init = required.install || !(yield machine.exists()) || (yield machine.state()) !== 'Running' || !isoversion || setupUtil.compareVersions(isoversion, packagejson['docker-version']) < 0;
 
     var exists = yield machine.exists();

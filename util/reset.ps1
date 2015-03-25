@@ -1,20 +1,9 @@
-$scriptpath = $MyInvocation.MyCommand.Path
-$dir = Split-Path $scriptpath
-$dockerFilesPath = ((get-childitem env:ProgramFiles).Value + '\docker')
-
-if(test-path $dockerFilesPath) {
-    Remove-Item $dockerFilesPath -Force -Recurse
-}
-
-$VBoxProcesses = get-process VBox*
-
-foreach ($VBoxProcess in $VBoxProcesses) {
-   Stop-Process $VBoxProcess
-}
+get-process VBox* | stop-process
 
 $kitematicPath = '~/Kitematic/'
 $dockerPath = '~/.docker'
 $virtualBoxPath = '~/.VirtualBox/'
+$KitematicBinsPath = '~/.Kitematic-bins/'
 
 if(test-path $kitematicPath) {
     Remove-Item $kitematicPath -Force -Recurse
@@ -28,7 +17,11 @@ if(test-path $virtualBoxPath) {
     Remove-Item $virtualBoxPath -Force -Recurse
 }
 
-$virtualBoxApp = Get-WmiObject -Class Win32_Product | Where {$_.Name -Match 'Oracle VM VirtualBox*'}
+if(test-path $KitematicBinsPath) {
+    Remove-Item $KitematicBinsPath -Force -Recurse
+}
+
+$virtualBoxApp = Get-WmiObject -Class Win32_Product | Where {$_.Name -Match 'VirtualBox'}
 
 if($virtualBoxApp -ne $null) {
     $virtualBoxApp.Uninstall()
