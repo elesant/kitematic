@@ -39,8 +39,6 @@ var SetupUtil = {
       }
       return false;
     }
-      
-    
   },
   copycmd: function (src, dest) {
     if(util.isWindows()) {
