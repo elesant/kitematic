@@ -15,7 +15,6 @@
     "test": "jest",
     "release": "gulp release",
     "release:beta": "gulp release --beta",
-    "postinstall": "if [ `uname` == 'Darwin' ]; then gulp download  && cp util/Info.plist cache/Atom.app/Contents/Info.plist && cp util/kitematic.icns cache/Atom.app/Contents/Resources/atom.icns; fi",
     "lint": "jsxhint src && jsxhint browser"
   },
   "licenses": [
