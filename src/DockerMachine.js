@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var path = require('path');
 var Promise = require('bluebird');
-var _ = require('underscore');
 var fs = require('fs');
 var util = require('./Util');
 
@@ -9,14 +8,18 @@ var NAME = 'dev';
 
 var DockerMachine = {
   command: function () {
-    return path.join(process.cwd(), 'resources', 'docker-machine-' + this.version() + '.exe');
+    if(util.isWindows()) {
+      return path.join(process.cwd(), 'resources', 'docker-machine-' + this.version() + '.exe');
+    } else {
+      return path.join(process.cwd(), 'resources', 'docker-machine-' + this.version());
+    }
   },
   name: function () {
     return NAME;
   },
   version: function () {
     try {
-      return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'))['docker-machine-version'];
+      return util.packagejson()['docker-machine-version'];
     } catch (err) {
       return null;
     }
@@ -162,7 +165,7 @@ var DockerMachine = {
       var cmd = [terminal, `DOCKER_HOST=${machine.url} DOCKER_CERT_PATH=${path.join(util.home(), '.docker/machine/machines/' + machine.name)} DOCKER_TLS_VERIFY=1 $SHELL`];
       util.exec(cmd).then(() => {});
     });
-  },
+  }
 };
 
 module.exports = DockerMachine;

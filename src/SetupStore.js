@@ -74,17 +74,33 @@ var _steps = [{
       try {
         yield machine.rm();
         yield machine.create();
-        yield machine.stop();
-        yield virtualBox.mountSharedDir(machine.name(), 'c/Users', 'C:\\Users');
-        yield machine.start();
+        if(util.isWindows()) {
+          var home = util.home();
+          var driveLetter = home.charAt(0);
+          var parts = home.split('\\').slice(0, -1);
+          var usersDirName = parts[parts.length-1];
+          var usersDirPath = parts.join('\\');
+          var shareName = driveLetter + "/" + usersDirName;
+
+          yield machine.stop();
+          yield virtualBox.mountSharedDir(machine.name(), shareName, usersDirPath);
+          yield machine.start();
+        }
       } catch (err) {
         rimraf.sync(path.join(util.home(), '.docker', 'machine', 'machines', machine.name()));
         yield machine.create();
-        yield machine.stop();
-          
-          //TODO: Support other paths.
-        yield virtualBox.mountSharedDir(machine.name(), 'c/Users', 'C:\\Users');
-        yield machine.start();
+        if(util.isWindows()) {
+          var home = util.home();
+          var driveLetter = home.charAt(0);
+          var parts = home.split('\\').slice(0, -1);
+          var usersDirName = parts[parts.length-1];
+          var usersDirPath = parts.join('\\');
+          var shareName = driveLetter + "/" + usersDirName;
+
+          yield machine.stop();
+          yield virtualBox.mountSharedDir(machine.name(), shareName, usersDirPath);
+          yield machine.start();
+        }
       }
       return;
     }
@@ -246,7 +262,7 @@ var SetupStore = assign(Object.create(EventEmitter.prototype), {
           throw {
             message: 'Machine IP could not be fetched. Please retry the setup. If this fails please file a ticket on our GitHub repo.',
             machine: yield machine.info(),
-            ip: ip,
+            ip: ip
           };
         }
         console.log('Finished Steps');
