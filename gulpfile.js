@@ -2,6 +2,7 @@ var babel = require('gulp-babel');
 var changed = require('gulp-changed');
 var concat = require('gulp-concat');
 var cssmin = require('gulp-cssmin');
+var rename = require('gulp-rename');
 var downloadatomshell = require('gulp-download-atom-shell');
 var fs = require('fs');
 var gulp = require('gulp');
@@ -167,33 +168,44 @@ gulp.task('settings', function () {
   string_src('settings.json', JSON.stringify(settings)).pipe(gulp.dest('dist/osx/' + options.appFilename.replace(' ', '\ ').replace('(','\(').replace(')','\)') + '/Contents/Resources/app'));
 });
 
-gulp.task('download-deps', function (done) {
+gulp.task('download-deps', function () {
     if(process.platform === 'win32') {
-        var spawn = require("child_process").spawn,child;
-        child = spawn("powershell.exe",['-ExecutionPolicy', 'unrestricted', '-File', 'util\\deps.ps1']);
-        child.stdout.on("data",function(data){
-            console.log("Powershell Data: " + data);
-        });
-        child.stderr.on("data",function(data){
-            console.log("Powershell Errors: " + data);
-        });
-        child.on("exit",function(){
-            console.log("Powershell Script finished");
-            done();
-        });
-        child.stdin.end(); //end input
+      return gulp.src('').pipe(
+          shell(['powershell.exe -ExecutionPolicy unrestricted -File util\\deps.ps1'])
+      );
     } else {
-        return gulp.src('').pipe(
-            shell(['./util/deps'])
-        );
+      return gulp.src('').pipe(
+          shell(['./util/deps'])
+      );
     }
 });
 
-gulp.task('release', function () {
-  runSequence('download', 'dist', ['copy', 'images', 'js', 'styles', 'settings'], 'sign', 'zip');
+gulp.task('copy-icns', ['download'], function () {
+  if(process.platform === 'win32') {
+    return gulp.src(options.icon)
+        .pipe(rename('atom.icns'))
+        .pipe(gulp.dest('./cache/resources'));
+  } else {
+    return gulp.src(options.icon)
+        .pipe(rename('atom.icns'))
+        .pipe(gulp.dest('./cache/Atom.app/Contents/Resources'));
+  }
 });
 
-gulp.task('default', ['download', 'copy', 'js', 'images', 'styles'], function () {
+gulp.task('copy-plist', ['download'], function (done) {
+  if(process.platform === 'darwin') {
+    return gulp.src('./util/Info.plist')
+        .pipe(gulp.dest('./cache/Atom.app/Contents'));
+  } else {
+    done();
+  }
+});
+
+gulp.task('release', function () {
+  runSequence('download-deps', 'download', 'copy-icns', 'copy-plist', 'dist', ['copy', 'images', 'js', 'styles', 'settings'], 'sign', 'zip');
+});
+
+gulp.task('default', ['download-deps', 'download', 'copy-icns', 'copy-plist', 'copy', 'js', 'images', 'styles'], function () {
   gulp.watch('src/**/*.js', ['js']);
   gulp.watch('index.html', ['copy']);
   gulp.watch('styles/**/*.less', ['styles']);

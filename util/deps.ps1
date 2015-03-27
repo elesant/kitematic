@@ -2,7 +2,7 @@ $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
 $BasePath = $dir + '\..\'
 $packageJson = get-content ($BasePath + 'package.json')
-[System.Reflection.Assembly]::LoadWithPartialName("System.Web.Extensions")
+[System.Reflection.Assembly]::LoadWithPartialName("System.Web.Extensions") > $null
 $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
 $packageJsonContent = $serializer.DeserializeObject($packageJson)
 $webclient = New-Object System.Net.WebClient
