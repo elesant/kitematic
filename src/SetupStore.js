@@ -218,7 +218,7 @@ var SetupStore = assign(Object.create(EventEmitter.prototype), {
     metrics.track('Started Setup', {
       virtualbox: virtualBox.installed() ? yield virtualBox.version() : 'Not Installed'
     });
-    //yield this.updateBinaries();
+    yield this.updateBinaries();
     var steps = yield this.requiredSteps();
     for (let step of steps) {
       console.log(step.name);
