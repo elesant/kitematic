@@ -58,6 +58,7 @@
     "mixpanel": "0.0.20",
     "node-uuid": "^1.4.2",
     "object-assign": "^2.0.0",
+    "open": "0.0.5",
     "react": "^0.12.2",
     "react-bootstrap": "^0.15.1",
     "react-retina-image": "^1.1.2",
