@@ -3,6 +3,7 @@ var path = require('path');
 var Promise = require('bluebird');
 var fs = require('fs');
 var util = require('./Util');
+var exec = require('child_process').exec;
 
 var NAME = 'dev';
 
@@ -160,11 +161,17 @@ var DockerMachine = {
     });
   },
   dockerTerminal: function () {
-    var terminal = path.join(process.cwd(), 'resources', 'terminal');
-    this.info().then(machine => {
-      var cmd = [terminal, `DOCKER_HOST=${machine.url} DOCKER_CERT_PATH=${path.join(util.home(), '.docker/machine/machines/' + machine.name)} DOCKER_TLS_VERIFY=1 $SHELL`];
-      util.exec(cmd).then(() => {});
-    });
+    if(util.isWindows()) {
+      this.info().then(machine => {
+        exec(`start cmd.exe /k "SET DOCKER_HOST=${machine.url}&& SET DOCKER_CERT_PATH=${path.join(util.home(), '.docker/machine/machines/' + machine.name)}&& SET DOCKER_TLS_VERIFY=1`);
+      });
+    } else {
+      var terminal = path.join(process.cwd(), 'resources', 'terminal');
+      this.info().then(machine => {
+        var cmd = [terminal, `DOCKER_HOST=${machine.url} DOCKER_CERT_PATH=${path.join(util.home(), '.docker/machine/machines/' + machine.name)} DOCKER_TLS_VERIFY=1 $SHELL`];
+        util.exec(cmd).then(() => {});
+      });
+    }
   }
 };
 
