@@ -12,7 +12,7 @@ describe('SetupStore', function () {
     pit('downloads virtualbox if it is not installed', function () {
       virtualBox.installed.mockReturnValue(false);
       setupUtil.download.mockReturnValue(Promise.resolve());
-      util.packagejson.mockReturnValue({'virtualbox-filename': ''});
+      setupUtil.virtualBoxFileName.mockReturnValue('');
       util.supportDir.mockReturnValue('');
       return setupStore.steps().download.run().then(() => {
         expect(setupUtil.download).toBeCalled();
@@ -24,7 +24,7 @@ describe('SetupStore', function () {
       virtualBox.version.mockReturnValue(Promise.resolve('4.3.16'));
       setupUtil.compareVersions.mockReturnValue(-1);
       setupUtil.download.mockReturnValue(Promise.resolve());
-      util.packagejson.mockReturnValue({'virtualbox-filename': ''});
+      setupUtil.virtualBoxFileName.mockReturnValue('');
       util.supportDir.mockReturnValue('');
       return setupStore.steps().download.run().then(() => {
         expect(setupUtil.download).toBeCalled();

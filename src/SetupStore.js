@@ -26,7 +26,6 @@ var _steps = [{
   totalPercent: 35,
   percent: 0,
   run: function (progressCallback) {
-    var packagejson = util.packagejson();
     return setupUtil.download(setupUtil.virtualBoxUrl(), path.join(util.supportDir(), setupUtil.virtualBoxFileName()), setupUtil.virtualBoxFChecksum(), percent => {
       progressCallback(percent);
     });
