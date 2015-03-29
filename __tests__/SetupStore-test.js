@@ -46,7 +46,9 @@ describe('SetupStore', function () {
       util.exec.mockReturnValue(Promise.resolve());
       return setupStore.steps().install.run().then(() => {
         expect(virtualBox.killall).toBeCalled();
-        expect(util.exec).toBeCalledWith('macsudo copycmd && fixcmd && installvbcmd');
+        expect(setupUtil.copyBinariesCmd).toBeCalled();
+        expect(setupUtil.fixBinariesCmd).toBeCalled();
+        expect(setupUtil.installVirtualBoxCmd).toBeCalled();
       });
     });
 
@@ -55,7 +57,9 @@ describe('SetupStore', function () {
       setupUtil.compareVersions.mockReturnValue(0);
       setupUtil.needsBinaryFix.mockReturnValue(true);
       return setupStore.steps().install.run().then(() => {
-        expect(util.exec).toBeCalledWith('macsudo copycmd && fixcmd');
+        expect(setupUtil.copyBinariesCmd).toBeCalled();
+        expect(setupUtil.fixBinariesCmd).toBeCalled();
+        expect(setupUtil.installVirtualBoxCmd).not.toBeCalled();
       });
     });
   });
