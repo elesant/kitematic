@@ -34,10 +34,11 @@ describe('SetupStore', function () {
 
   describe('install step', function () {
     util.exec.mockReturnValue(Promise.resolve());
-    setupUtil.copyBinariesCmd.mockReturnValue('copycmd');
-    setupUtil.fixBinariesCmd.mockReturnValue('fixcmd');
+    util.execProper.mockReturnValue(Promise.resolve());
+    setupUtil.copyBinariesCmd.mockReturnValue(Promise.resolve());
+    setupUtil.fixBinariesCmd.mockReturnValue(Promise.resolve());
     virtualBox.killall.mockReturnValue(Promise.resolve());
-    setupUtil.installVirtualBoxCmd.mockReturnValue('installvb');
+    setupUtil.installVirtualBoxCmd.mockReturnValue(Promise.resolve());
     setupUtil.macSudoCmd.mockImplementation(cmd => 'macsudo ' + cmd);
 
     pit('installs virtualbox if it is not installed', function () {
