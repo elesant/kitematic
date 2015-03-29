@@ -26,7 +26,7 @@ var _steps = [{
   totalPercent: 35,
   percent: 0,
   run: function (progressCallback) {
-    return setupUtil.download(setupUtil.virtualBoxUrl(), path.join(util.supportDir(), setupUtil.virtualBoxFileName()), setupUtil.virtualBoxFChecksum(), percent => {
+    return setupUtil.download(setupUtil.virtualBoxUrl(), path.join(util.supportDir(), setupUtil.virtualBoxFileName()), setupUtil.virtualBoxChecksum(), percent => {
       progressCallback(percent);
     });
   }
@@ -38,25 +38,20 @@ var _steps = [{
   percent: 0,
   seconds: 5,
   run: Promise.coroutine(function* (progressCallback) {
-    var cmd = setupUtil.copyBinariesCmd() + ' && ' + setupUtil.fixBinariesCmd();
+    yield setupUtil.copyBinariesCmd();
+    yield setupUtil.fixBinariesCmd();
+
     if (!virtualBox.installed()) {
       yield virtualBox.killall();
-      cmd += ' && ' + setupUtil.installVirtualBoxCmd();
-    } else {
-      if (!setupUtil.needsBinaryFix()) {
-        return;
+      try {
+        progressCallback(50); // TODO: detect when the installation has started so we can simulate progress
+        yield setupUtil.installVirtualBoxCmd();
+      } catch (err) {
+        throw null;
       }
     }
-    try {
-      progressCallback(50); // TODO: detect when the installation has started so we can simulate progress
-      if(util.isWindows()) {
-        yield util.exec(cmd);
-      } else {
-        yield util.exec(setupUtil.macSudoCmd(cmd));
-      }
-    } catch (err) {
-      throw null;
-    }
+
+    return;
   })
 }, {
   name: 'init',
@@ -186,7 +181,7 @@ var SetupStore = assign(Object.create(EventEmitter.prototype), {
     var vboxfile = path.join(util.supportDir(), setupUtil.virtualBoxFileName());
     var vboxNeedsInstall = !virtualBox.installed();
       
-    required.download = vboxNeedsInstall && (!fs.existsSync(vboxfile) || setupUtil.checksum(vboxfile) !== setupUtil.virtualBoxFChecksum());
+    required.download = vboxNeedsInstall && (!fs.existsSync(vboxfile) || setupUtil.checksum(vboxfile) !== setupUtil.virtualBoxChecksum());
     required.install = vboxNeedsInstall || setupUtil.needsBinaryFix();
     required.init = required.install || !(yield machine.exists()) || (yield machine.state()) !== 'Running' || !isoversion || setupUtil.compareVersions(isoversion, packagejson['docker-version']) < 0;
 
