@@ -10,11 +10,7 @@ var resources = require('./Resources');
 
 var SetupUtil = {
   needsBinaryFix() {
-    if(util.pathDoesNotExistOrDenied(util.binsPath()) || util.pathDoesNotExistOrDenied(util.dockerBinPath()) || util.pathDoesNotExistOrDenied(util.dockerMachineBinPath())) {
-      return true;
-    }
-
-    return false;
+    return !!(util.pathDoesNotExistOrDenied(util.binsPath()) || util.pathDoesNotExistOrDenied(util.dockerBinPath()) || util.pathDoesNotExistOrDenied(util.dockerMachineBinPath()));
   },
   escapePath(str) {
     return str.replace(/ /g, '\\ ').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
@@ -30,7 +26,7 @@ var SetupUtil = {
     yield fs.mkdirs(util.binsPath());
     yield fs.copy(resources.docker_machine(), util.dockerMachineBinPath());
     yield fs.copy(resources.docker(), util.dockerBinPath());
-    return;
+    return Promise.resolve();
   }),
   fixBinariesCmd: Promise.coroutine(function* () {
     if(util.isWindows()) {
@@ -40,16 +36,16 @@ var SetupUtil = {
     yield fs.chown(util.binsPath(), process.getuid(), '80');
     yield fs.chown(util.dockerBinPath(), process.getuid(), '80');
     yield fs.chown(util.dockerMachineBinPath(), process.getuid(), '80');
-    return;
+    return Promise.resolve();
   }),
   installVirtualBoxCmd: Promise.coroutine(function* () {
     if(util.isWindows()) {
       yield util.execProper(`powershell.exe -ExecutionPolicy unrestricted -Command "Start-Process \\\"${path.join(util.supportDir(), this.virtualBoxFileName())}\\\" -ArgumentList \\\"--silent --msiparams REBOOT=ReallySuppress\\\" -Verb runAs -Wait"`);
     } else {
-      yield util.exec(setupUtil.macSudoCmd(`installer -pkg ${this.escapePath(path.join(util.supportDir(), this.virtualBoxFileName()))} -target /`));
+      yield util.exec(this.macSudoCmd(`installer -pkg ${this.escapePath(path.join(util.supportDir(), this.virtualBoxFileName()))} -target /`));
     }
 
-    return;
+    return Promise.resolve();
   }),
   virtualBoxUrl() {
     if(util.isWindows()) {
@@ -59,7 +55,7 @@ var SetupUtil = {
     }
   },
   macSudoCmd(cmd) {
-    return `${this.escapePath(path.join(util.resourceDir(), 'macsudo'))} -p "Kitematic requires administrative privileges to install." sh -c \"${cmd}\"`;
+    return `${this.escapePath(resources.macsudo())} -p "Kitematic requires administrative privileges to install." sh -c \"${cmd}\"`;
   },
   simulateProgress(estimateSeconds, progress) {
     var times = _.range(0, estimateSeconds * 1000, 200);
