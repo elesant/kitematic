@@ -201,6 +201,18 @@ gulp.task('copy-plist', ['download'], function (done) {
   }
 });
 
+gulp.task('reset', function () {
+  if(process.platform === 'win32') {
+    return gulp.src('').pipe(
+        shell(['powershell.exe -ExecutionPolicy unrestricted -Command "Start-Process powershell -verb runas -ArgumentList \\\"-ExecutionPolicy unrestricted  -file c:\\Users\\Dominik\\Documents\\GitHub\\kitematic\\util\\reset.ps1\\\" -Wait"'])
+    );
+  } else {
+    return gulp.src('').pipe(
+        shell(['./util/reset'])
+    );
+  }
+});
+
 gulp.task('release', function () {
   runSequence('download-deps', 'download', 'copy-icns', 'copy-plist', 'dist', ['copy', 'images', 'js', 'styles', 'settings'], 'sign', 'zip');
 });

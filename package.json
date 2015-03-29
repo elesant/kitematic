@@ -15,7 +15,8 @@
     "test": "jest",
     "release": "gulp release",
     "release:beta": "gulp release --beta",
-    "lint": "jsxhint src && jsxhint browser"
+    "lint": "jsxhint src && jsxhint browser",
+    "reset": "gulp reset"
   },
   "licenses": [
     {
